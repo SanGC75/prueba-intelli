@@ -11,19 +11,19 @@ Este proyecto implementa una API RESTful con Laravel 5.3, utilizando **PostgreSQ
 
 1.  **Clonar el repositorio:**
     ```bash
-    git clone <URL_DE_TU_REPOSITORIO>
-    cd <nombre_del_directorio>
+    git clone <https://github.com/SanGC75/prueba-intelli.git>
+    cd <prueba-intelli>
     ```
 
 2.  **Configurar variables de entorno (`.env`):**
     Asegúrate de configurar la conexión a PostgreSQL:
     ```env
-    DB_CONNECTION=pgsql
-    DB_HOST=db  # O el nombre del servicio en tu docker-compose
-    DB_PORT=5432
-    DB_DATABASE=nombre_db
-    DB_USERNAME=usuario_db
-    DB_PASSWORD=password_db
+		DB_CONNECTION=pgsql
+		DB_HOST=prueba_intelli_db
+		DB_PORT=5432
+		DB_DATABASE=intelli_db
+		DB_USERNAME=admin
+		DB_PASSWORD=123456
     ```
 
 3.  **Levantar entorno con Docker:**
@@ -74,7 +74,7 @@ Las rutas están protegidas por el middleware `auth.jwt`. Se debe incluir el tok
 ### 4. Exportación
 | Método | URL | Descripción |
 | :--- | :--- | :--- |
-| `GET` | `/api/export-library` | Exporta autores y libros a formato CSV/XLSX. |
+| `GET` | `/api/export-library` | Exporta autores y libros a formato XLS. |
 
 ## Notas Técnicas
 * **Base de Datos:** Se utiliza PostgreSQL. Asegúrate de tener instalada la extensión `php-pdo_pgsql` en el contenedor.
