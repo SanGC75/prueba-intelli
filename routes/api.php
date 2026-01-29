@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +15,22 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:api');
+
+Route::get('/test', function () {
+    return response()->json(['status' => 'API Funcionando']);
+});
+
+Route::post('login', 'Auth\ApiAuthController@login');
+Route::post('logout', 'Auth\ApiAuthController@logout');
+Route::get('export-library', 'ExportController@exportData');
+Route::get('me', 'Auth\ApiAuthController@me');
+
+Route::group(['middleware' => 'auth.jwt'], function () {
+    Route::resource('authors', 'AuthorController', [
+        'except' => ['create', 'edit']
+    ]);
+    Route::resource('books', 'BookController', [
+        'except' => ['create', 'edit']
+    ]);
+});
+

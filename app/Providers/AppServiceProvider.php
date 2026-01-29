@@ -13,7 +13,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        \App\Book::observe(\App\Observers\BookObserver::class);
     }
 
     /**

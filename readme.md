@@ -1,40 +1,82 @@
-<p align="center"><img src="https://laravel.com/assets/img/components/logo-laravel.svg"></p>
+Este proyecto implementa una API RESTful con Laravel 5.3, utilizando **PostgreSQL** como motor de base de datos. Incluye autenticación JWT, gestión de Autores y Libros, un sistema de Jobs para consistencia de datos y exportación de reportes.
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
-</p>
+## Requisitos
 
-## About Laravel
+* Docker y Docker Compose
+* PHP 7.x (en contenedor)
+* PostgreSQL 9.x/10.x+ (en contenedor)
+* Composer
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable, creative experience to be truly fulfilling. Laravel attempts to take the pain out of development by easing common tasks used in the majority of web projects, such as:
+## Configuración y Ejecución
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+1.  **Clonar el repositorio:**
+    ```bash
+    git clone <URL_DE_TU_REPOSITORIO>
+    cd <nombre_del_directorio>
+    ```
 
-Laravel is accessible, yet powerful, providing tools needed for large, robust applications. A superb combination of simplicity, elegance, and innovation give you tools you need to build any application with which you are tasked.
+2.  **Configurar variables de entorno (`.env`):**
+    Asegúrate de configurar la conexión a PostgreSQL:
+    ```env
+    DB_CONNECTION=pgsql
+    DB_HOST=db  # O el nombre del servicio en tu docker-compose
+    DB_PORT=5432
+    DB_DATABASE=nombre_db
+    DB_USERNAME=usuario_db
+    DB_PASSWORD=password_db
+    ```
 
-## Learning Laravel
+3.  **Levantar entorno con Docker:**
+    ```bash
+    sudo docker-compose up -d --build
+    ```
 
-Laravel has the most extensive and thorough documentation and video tutorial library of any modern web application framework. The [Laravel documentation](https://laravel.com/docs) is thorough, complete, and makes it a breeze to get started learning the framework.
+4.  **Instalar dependencias y preparar DB:**
+    ```bash
+    sudo docker exec -it prueba_intelli composer install
+    sudo docker exec -it prueba_intelli php artisan migrate:refresh --seed
+    sudo docker exec -it prueba_intelli php artisan jwt:secret
+    ```
 
-If you're not in the mood to read, [Laracasts](https://laracasts.com) contains over 900 video tutorials on a range of topics including Laravel, modern PHP, unit testing, JavaScript, and more. Boost the skill level of yourself and your entire team by digging into our comprehensive video library.
+5.  **Permisos de carpetas:**
+    ```bash
+    sudo docker exec -it prueba_intelli chmod -R 775 storage bootstrap/cache
+    sudo docker exec -it prueba_intelli chown -R www-data:www-data storage
+    ```
 
-## Contributing
+## Endpoints de la API
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](http://laravel.com/docs/contributions).
+Las rutas están protegidas por el middleware `auth.jwt`. Se debe incluir el token en el header: `Authorization: Bearer {token}`.
 
-## Security Vulnerabilities
+### 1. Autenticación y Usuarios
+| Método | URL | Descripción |
+| :--- | :--- | :--- |
+| `POST` | `/api/login` | Login de usuario y obtención de token. |
+| `POST` | `/api/logout` | Cierre de sesión e invalidación de token. |
+| `GET` | `/api/me` | Obtener datos del usuario autenticado. |
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell at taylor@laravel.com. All security vulnerabilities will be promptly addressed.
+### 2. Módulo de Autores
+| Método | URL | Descripción |
+| :--- | :--- | :--- |
+| `GET` | `/api/authors` | Lista todos los autores. |
+| `POST` | `/api/authors` | Crear un nuevo autor. |
+| `GET` | `/api/authors/{id}` | Ver detalle de un autor. |
+| `DELETE` | `/api/authors/{id}` | Eliminar un autor. |
 
-## License
+### 3. Módulo de Libros
+| Método | URL | Descripción |
+| :--- | :--- | :--- |
+| `GET` | `/api/books` | Lista libros (activos). |
+| `POST` | `/api/books` | Crear libro (dispara Job para `books_count`). |
+| `GET` | `/api/books/{id}` | Ver detalle de un libro. |
+| `DELETE` | `/api/books/{id}` | Borrado lógico (dispara Job para actualizar contador). |
 
-The Laravel framework is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).
+### 4. Exportación
+| Método | URL | Descripción |
+| :--- | :--- | :--- |
+| `GET` | `/api/export-library` | Exporta autores y libros a formato CSV/XLSX. |
+
+## Notas Técnicas
+* **Base de Datos:** Se utiliza PostgreSQL. Asegúrate de tener instalada la extensión `php-pdo_pgsql` en el contenedor.
+* **Consistencia:** El campo `books_count` en la tabla autores se actualiza mediante un **Job** disparado por un **Observer** del modelo `Book`.
+* **Borrado Lógico:** Los libros utilizan una columna `deleted` (boolean) para el control de registros eliminados.
