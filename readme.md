@@ -80,3 +80,7 @@ Las rutas están protegidas por el middleware `auth.jwt`. Se debe incluir el tok
 * **Base de Datos:** Se utiliza PostgreSQL. Asegúrate de tener instalada la extensión `php-pdo_pgsql` en el contenedor.
 * **Consistencia:** El campo `books_count` en la tabla autores se actualiza mediante un **Job** disparado por un **Observer** del modelo `Book`.
 * **Borrado Lógico:** Los libros utilizan una columna `deleted` (boolean) para el control de registros eliminados.
+* Crear usuario:
+sudo docker exec -it prueba_intelli php artisan tinker
+App\User::create(['name' => 'Admin', 'email' => 'admin@test.com', 'password' => bcrypt('123456')]);
+exit
